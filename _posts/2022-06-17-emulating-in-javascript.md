@@ -6,7 +6,7 @@ And why they're both a "fun" challenge
 ### Cycle-accurate SNES emulation in JavaScript? Are you LITERALLY CRIMINALLY INSANE?
 I can't speak to my sanity, but for some reason I decided to do as much of the development as I can directly on my iPad. That seriously limits my options.
 
-But I think it's possible. I've seen a few failed projects, but I'm a senior software engineer. I wrote a pretty decent NES 20 years ago. I love low-level projects and embedded program. I'm not a fan of JavaScript, but that just adds to the fun, right?
+But I think it's possible. I've seen a few failed projects, but I'm a senior software engineer. I wrote a pretty decent NES emulator 20 years ago. I love low-level projects and embedded programming. I'm not a fan of JavaScript, but that just adds to the fun, right?
 
 Right?
 
@@ -25,10 +25,10 @@ The 65c816 is kind of a pain. Yes, I know MODR/M gives people nightmares, but th
 
 An example of this is AND, a simple bitwise operation. Simplified JavaScript for it might look like this:
 
-```js
+```
 function AND() {
     A = A & operand;   // Perform operation
-    P.N = +((A & 0x8000) >> 15); // Negative flag
+    P.N = (A & 0x8000) >> 15; // Negative flag
     P.Z = +(A === 0);  // Zero flag
 }
 ```
@@ -37,19 +37,19 @@ This single instruction is available in a ton of different addressing modes - 15
 
 We don't want to write 15 (actually 60, but I'll get to that) versions of the same function, so we want some kind of code that will generically access the data from memory, then call the actual AND algorithm, then complete the instruction. We could then theoretically apply this to other similar instructions like ADC, ORA, and LDA, and save ourselves a lot of code.
 
-In a simplified context, an Absolute (which is directly addressing memory in a 16-bit way) addressing function might look like this:
+In a simplified context, an Absolute (which is directly addressing memory with 16 bits) addressing function might look like this:
 
-```js
+```
 function Absolute(instruction) {
     let operand = mem_fetch(address);
     if (instruction === AND) AND();  
 }
 ```
 
-Except it's not nearly so simple. Depending on the state of three internal flags in the CPU, and the specific instruction being used, addressing modes perform differently. For instance, AND $1000 and INC $1000 both function differently, despite both using absolute addressing.
+Except it's not nearly so simple. Different instructions use the same addressing mode but behave very differently. For instance, AND $1000 and INC $1000 both function differently, despite both using absolute addressing.
 
 
-```js
+```
 function INC(operand) {
     operand++;
 }
@@ -68,7 +68,7 @@ function Absolute(instruction) {
 So far, not so bad. But what about when INC is instead called on the Accumulator, or X, or Y? Now our INC function is looking more like this
 
 
-```js
+```
 function INC(operand, mode) {
     if (mode === ACCUMULATOR) {
         A++;
@@ -91,9 +91,11 @@ function INC(operand, mode) {
 
 You can see this is getting laborious.
 
-If you know anything about modern processors, you will know that running quickly on them depends on speculative execution. Ifs are one of your greatest enemies, and that does prove true even when they are interpreting a language like Python or Javascript.
+There’s other permutations I’m not covering explicitly too, like the difference between load absolute and store absolute. 
 
-Instead, you could write a bunch of different versions of INC:
+If you know anything about modern processors, you will know that running quickly on them depends heavily on speculative execution. Their super long pipelines slow to a crawl if they mix the prediction of an if statement. If statements are one of your greatest enemies, and that does prove true even when speaking about interpreted or JIT virtualized languages like Python or JavaScript.
+
+Instead of using if’s, you could write a bunch of different versions of INC:
 
 ```
 function INCA() {
@@ -118,13 +120,13 @@ Of course, function calls themselves are a bit of a slowdown, due to the way JIT
 
 ### The status bits
 
-There's one more complication here, first! You see, depending on the status of 3 different processor flags, individual instructions AND addressing modes can behave differently.
+There's one more BIG complication here, first! You see, depending on the status of 3 different processor flags, individual instructions AND addressing modes can behave differently.
 
 The X flag toggles the Index (X & Y) registers between 8 and 16 bits. The M flag toggles memory accesses and the Accumulator between 8 and 16 bits. Also, the processor can be in Emulation mode (E), or not. These 3 bit flags (theoretically) make 8 times as many opcodes to emulate. In reality the number is 5, because when E is 1, M and X are also forced to 1.
 
 So an INC in 8-bit mode on a piece of memory will have at least 2 less cycles than an INC in 16-bit mode, and will also need different algorithms. You'll either need a lot of IF statements, some VERY big switch statments, or a lot of nearly-identical code like Absolute8bitRead, Absolute16bitRead, Absolute8bitReadModifyWrite, Absolute16bitReadModifyWrite, EmulatedReadModifyWrite, EmulatedRead, and 8- and 16-bit versions of all those instructions.
 
-That's just for one instruction and one addressing mode, and doesn't even cover 2 more sub-types of the Absolute mode.
+That's just for one instruction and one addressing mode, and doesn't even cover 3 more sub-types of the Absolute mode.
 
 That's a ridiculous amount to hand-code!
 
@@ -142,9 +144,9 @@ This does have some downsides. The generated file is currently multiple megabyte
 
 However, it has many upsides, too. It allows me to build instructions out of primitives, debug multiple opcodes at once, and be as assured as I can be of correct behavior.
 
-The final generated code looks like this. Keep in mind another complication we haven't discussed is how to emulate the bus states and individual cycles, which is the reason you'll find the switch statement. And this is just for INC absolute with E=0 M=0 X=0. There are actually 4 different versions of this specific function, and here's just one, with added a few comments for clarity.
+The final generated code looks like this. Keep in mind another complication we haven't discussed is how to emulate the bus states and individual cycles, which is the reason for the switch statement. And this is just for INC absolute with E=0 M=0 X=0. There are actually 4 different versions of this specific function, and here's just one, with added a few comments for clarity.
 
-```js
+```
 function(regs, pins) { // INC a
     switch(regs.TCU) { // TCU is Timing Control Unit, a real register on a real 65c816 used for this same purpose. It increments by one each cycle.
             // INC a E=0 M=0 X=0
@@ -197,6 +199,8 @@ function(regs, pins) { // INC a
 Don't worry about all that stuff about pins. For some reason, I decided I wanted to make my CPU interface through pins, like a real one. It actually ends up being convenient for the purposes of the SNES, which I'll probably discuss later.
 
 There are over a thousand other functions that look just like this. The generated file is over 50,000 lines long. The code to generate it totals an order of magnitude less. And if I want to change the overall approach for purposes of optimization, I only have a few places to do it. Lots and lots of win.
+
+A specific example of that win is in debugging. If I find and fix a bug in the addressing code for LDA a, I will also be fixing that same bug in a few other instructions at the same time, for free. 
 
 One interesting thing of note is that by far, the majority of this code by volume is not actually dealing with an instruction. In fact, most instructions on the 65c816 are so simple they fit in just a few lines - it's all the other things the processor is doing that are a pain.
 
