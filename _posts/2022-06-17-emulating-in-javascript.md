@@ -93,7 +93,7 @@ You can see this is getting laborious.
 
 There’s other permutations I’m not covering explicitly too, like the difference between load absolute and store absolute. 
 
-If you know anything about modern processors, you will know that running quickly on them depends heavily on speculative execution. Their super long pipelines slow to a crawl if they mix the prediction of an if statement. If statements are one of your greatest enemies, and that does prove true even when speaking about interpreted or JIT virtualized languages like Python or JavaScript.
+If you know anything about modern processors, you will know that running quickly on them depends heavily on speculative execution. Their super long pipelines slow to a crawl if they miss the prediction of an if statement. If statements are one of your greatest enemies, and that does prove true even when speaking about interpreted or JIT virtualized languages like Python or JavaScript.
 
 Instead of using if’s, you could write a bunch of different versions of INC:
 
