@@ -3,6 +3,8 @@
 And a bit about emulating in the first place
 ---
 
+This post is a work-in-progress
+
 ### Test Vectors Needed
 In my last post, I detailed why (I believe) the 65C816 wasn't more popular, despite being a 16-bit extension to one of the most popular processors in the world at the time.
 
@@ -22,7 +24,18 @@ The fun thing about the 65c816 is that testing it is actually pretty straightfor
 
 There are really two ways to "slice" the instruction set: into Operations, such as ADC (Add with Carry), ROL (Rotate Left), etc., and Addressing Modes, such as Directed Indexed Indirect.
 
-If that sentence doesn't make any sense to you, don't worry, I'll break it down a little.
+If that sentence doesn't make any sense to you, check out my previous post where I go into detail about this.
 
 ### Testing instructions
-At least
+For instance to test LDA, STA, etc. only need to test different R, W, RMW versions...
+
+### Programs, assemble!
+Writing an assembler
+
+### Environmental issues
+Creating a simple, fake computer for it to run on, that other people may be able to reuse some day on their own emulators
+
+### Example code
+
+### Next post
+Adventures in optimizing 65c816 code
