@@ -1,6 +1,6 @@
 ## Testing your CPU emulator
 
---when it's not very popular
+--when the CPU is not very popular
 ---
 
 ### Test Vectors Needed
