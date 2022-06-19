@@ -1,16 +1,14 @@
 ## Testing your CPU emulator
 
-And a bit about emulating in the first place
+--when it's not very popular
 ---
-
-This post is a work-in-progress
 
 ### Test Vectors Needed
 In my last post, I went into a bunch of technical stuff about how and why the 65c816 is a pain to emulate on its own merits, and my solutions for it. I've also mentioned previously how the 65c816 was not a popular processor, which is, I believe, because there were much better alternatives available.
 
 All this means that there's basically only two meaningfully different SNES emulators to look at, and not a lot of test vectors available. You want to test your 8080, Z80, 6502, or even 68000 core? There's repositories filled with thousands of tests.
 
-You want to test your 65c816 core? Well, you better have most of a function SNES emulator on top of it, because there isn't really much that runs on less.
+You want to test your 65c816 core? Well, you better have most of a functional SNES emulator on top of it, because there isn't really much that runs on less.
 
 I'd like to verify my 65c816 core a long time before I get all that going. There's no sense debugging my memory mapping code when I don't even know if the input addresses are likely to be any good. So after looking around, I decided to write my own.
 
