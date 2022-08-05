@@ -62,7 +62,22 @@ However, any of the hundreds of PPU registers that control anything from default
 ### JavaScript is bad at that specific thing though
 Specifically, it’s very slow about copying objects. To copy a nested object with a few hundred total members each frame, it ended up using around 20-30 percent of the execution time!
 
-If you ever find yourself in that situation, I recommend you do what I did: take advantage of code generation. I wrote a function that inspects the properties of an object, and auto-generate a copy function that will copy that object member by member, which is so fast it doesn’t even appear in the profiler anymore for a huge speed increase. The final code looks like this:
+If you ever find yourself in that situation, I recommend you do what I did: take advantage of code generation. I wrote a function that inspects the properties of an object, and auto-generate a copy function that will copy that object member by member, which is so fast it doesn’t even appear in the profiler anymore for a huge speed increase. The final code is a few hundred lines that look like this:
+
+```
+    // Auto-generated function, fastest way to do this I guess
+    copy(from, to) {
+        let oldto = to;
+        to = this.lines[to];
+        from = this.lines[from];
+        to.control.y = from.control.y;
+        to.control.field = from.control.field;
+        to.control.num_lines = from.control.num_lines;
+        to.mosaic.size = from.mosaic.size;
+        to.mosaic.counter = from.mosaic.counter;
+        to.mode7.hflip = from.mode7.hflip;
+        to.mode7.vflip = 
+```
 
 This approach was later re-used to serialize and deserialize to shared memory buffers quickly. 
 
