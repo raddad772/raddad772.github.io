@@ -35,7 +35,7 @@ See, there are a few problems with this:
 cAll in all, the conventional wisdom isn't really that great if you want an accurate timing system.
  
 ### Why not just use timers like a C++ programmer would?
-cGood question! It's made harder by the fact that, due to the threat of Spectre, browsers make timers have a resolution of close to ~4ms. It's possible to use...WAYS...to get around this.
+Good question! It's made harder by the fact that, due to the threat of Spectre, browsers make timers have a resolution of close to ~4ms. It's possible to use...WAYS...to get around this.
  
  BUT.
  
