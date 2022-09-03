@@ -43,14 +43,14 @@ Good question! It's made harder by the fact that, due to the threat of Spectre, 
  
  This, unfortunately, is taking us out of the realm of something that can be just loaded off your disk as .HTML file and run. However, we're already passed that. So we have access to performance.now() at <.1ms accuracy.
  
- It's not quite as useful as it could be, because timestamps' 0 starts when the thread does. This means that they cannot be compared across threads precicesly. But perhaps if we dedicate a thread just to timing...
+ It's not quite as useful as it could be, because timestamps' 0 starts when the thread does. This means that they cannot be compared across threads precisely. But perhaps if we dedicate a thread just to timing...
  
 ### A dedicated thread just for timing
  In JavaScript multi-threading, you have a big difference between your main thread and web workers.
  
- Your main thread gets access to all the APIs, DOM, etc. On the other hand, it has no way to "sleep", because the developers think it's too easy to cause a deadlock with a sleep. (The only sleep functionality threads have is Atomics.wait, but that's another story). I find this a little ridiculous, since it's super easy to cause a deadlock a hundred other ways, and I would rather my language treated me like an adult, but whatever.
+ Your main thread gets access to all the APIs, DOM, etc. On the other hand, it has no way to "sleep", because the developers think it's too easy to cause a deadlock with a sleep. (The only sleep functionality threads have is Atomics.wait, but that's another story). I find this a little ridiculous, since it's super easy to cause a deadlock a hundred other ways, and I would rather my language treated me like an adult, but whatever. Furthermore, the thread *must* sleep by "finishing execution," or the UI will lock up.
  
- Threads have a very restricted subset of features they have access to. They live in their own namespace, as a .js that includes other .js files they need.
+ Threads have a very restricted subset of features they have access to. They live in their own namespace, as a .js that specifically includes other .js files they need.
  
  Once instantiated, a thread is actually always sleeping, waiting on a message from the main thread. Threads can send messages back to the main thread, too. These messages will be placed in a queue until the current operation completes. Messages will NOT pre-empt the running thread, and the common paradigm of calling a class's "handle_message"-type function from the calling thread, knowing it'll execute there, is not possible in JavaScript.
  
