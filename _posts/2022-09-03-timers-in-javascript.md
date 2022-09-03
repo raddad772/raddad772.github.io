@@ -32,10 +32,10 @@ See, there are a few problems with this:
  - If you want to implement a "fast forward"-style button into your emulator, too bad for you, you get what you get. There's obviously ways around this, it's just that this timing is so inflexible
  - Sometimes, for unknown reasons, Chrome will just throttle the number of requestAnimationFrame() calls seemingly at random. This happened for me when I implemented line A12-watching on my NES. This is a bit expensive, but still well under 2% of total execution time. Still, it pushed my NES core from 60FPS to 40FPS (which is a big ? for me)
  
- All in all, the conventional wisdom isn't really that great if you want an accurate timing system.
+cAll in all, the conventional wisdom isn't really that great if you want an accurate timing system.
  
- ### Why not just use timers like a C++ programmer would?
- Good question! It's made harder by the fact that, due to the threat of Spectre, browsers make timers have a resolution of close to ~4ms. It's possible to use...WAYS...to get around this.
+### Why not just use timers like a C++ programmer would?
+cGood question! It's made harder by the fact that, due to the threat of Spectre, browsers make timers have a resolution of close to ~4ms. It's possible to use...WAYS...to get around this.
  
  BUT.
  
@@ -45,7 +45,7 @@ See, there are a few problems with this:
  
  It's not quite as useful as it could be, because timestamps' 0 starts when the thread does. This means that they cannot be compared across threads precicesly. But perhaps if we dedicate a thread just to timing...
  
- ### A dedicated thread just for timing
+### A dedicated thread just for timing
  In JavaScript multi-threading, you have a big difference between your main thread and web workers.
  
  Your main thread gets access to all the APIs, DOM, etc. On the other hand, it has no way to "sleep", because the developers think it's too easy to cause a deadlock with a sleep. (The only sleep functionality threads have is Atomics.wait, but that's another story). I find this a little ridiculous, since it's super easy to cause a deadlock a hundred other ways, and I would rather my language treated me like an adult, but whatever.
@@ -56,7 +56,7 @@ See, there are a few problems with this:
  
  So with these caveats in mind, I designed a class and a worker: timing_header.js for use by the main thread, and timing_worker.js to do the work of a timer.
  
- ### Basic architecture
+### Basic architecture
  The timing class can be given any arbitrary FPS to try to hit, and be told to play and pause.
 
 It works like this. Let's say we have a 60FPS target frame rate, so 16.66666666667ms target frame time.
@@ -71,7 +71,7 @@ That way, the main thread only needs to worry about sending "pause," "play," and
 That all sounds easy, right? It would be!
 
 ### How do we wait?
-In Computer Science, there's generallys two ways to wait: a busy-wait, where we're checking a timer over and over and over, and a sleep method, which allows other threads to use the CPU execution resources while we're asleep.
+In computer science, there's generally two ways to wait: a busy-wait, where we're checking a timer over and over and over, and a sleep method, which allows other threads to use the CPU execution resources while we're asleep.
 By default, PCs schedule threads in 1ms slices anyway, so you'll get pretty close to your 16.67ms if you just measure frame time and sleep the rest.
 
 Unless, of course, you're using JavaScript.
