@@ -10,29 +10,29 @@ So although I may keep developing emulators in JavaScript first (see below), the
 ### Wait, what's WebAssembly?
 WebAssembly is the "fourth language of the web" after HTML, CSS, and JavaScript. It's a binary bytecode similar to what processors execute, with the intention of executing at near-native speed.
 
-Chrome already does a pretty good job at this, and the theoretical performance of a WebAssembly program isn't actually that much higher than a JavaScript one. But WebAssembly is consistent. It doesn't have the start-up time. And it should be fast on browsers OTHER than Chrome, too!
+Chrome already does a pretty good job at running some JavaScript at near-native speed, and the theoretical performance of a WebAssembly program isn't actually that much higher than a JavaScript one - leaving out things like WebAssembly SIMD extensions. But WebAssembly is consistent. It doesn't have the start-up time while the code is profiled. And it should be fast on browsers OTHER than Chrome, too!
 
 ### Wait, what's AssemblyScript?
-AssemblyScript is a language based on TypeScript, so it's pretty similar to JavaScript. It's meant specifically to compile to WebAssembly.
+AssemblyScript is a language based on TypeScript, so it's pretty similar to JavaScript. It was from the ground up to compile to WebAssembly or JavaScript.
 
 Since JSMoo uses so much code generation, theoretically, I should be able to re-target the code generation and produce AssemblyScript, which will then compile to WebAssembly. And the non-generated portions, I should largely be able to copy and paste and slap types onto.
 
-### Some metrics
-First. We want to make sure the finished product is doing as good as JavaScript. I haven't measured on FireFox yet (see below), but the NES emulator, on my PC, running Super Mario Bros. 1, pure JavaScript, single-threaded, produces one frame in 8.5-9.5ms.
+### Measure twice, code thrice
+We want to make sure the finished product is doing as good as JavaScript. I haven't measured on FireFox yet (see below), but the NES emulator, on my PC, running Super Mario Bros. 1, pure JavaScript, single-threaded, produces one frame in 8.5-9.5ms.
 
 How is SNES possible full-speed if NES uses so much time? Well, I emulated the internals of the NES PPU, including its memory access patterns and internal registers. This is extremely accurate, and very slow, in comparison to other methods, like just drawing from memory. The SNES currently has a cycle-accurate CPU emulator, an instruction-accurate SPC emulator, and a scanline-based PPU. The SNES also offloads the PPU drawing onto other threads. In comparison, the NES has a 100% cycle-accurate (minus bugs) CPU and PPU.
 
-Anyway. 8.5-9.5ms is the number to try to reach or even, beat.
+Anyway. 8.5-9.5ms is the number to try to reach, or even beat.
 
 ### JavaScript to AssemblyScript
 I spent about 2-3 hours exploring AssemblyScript, 4-6 hours porting the NES emulation code (including re-targeting the M6502 core generator), and about 4-6 more hours integrating the NES core and getting a picture out of it.
 
 Porting isn't 100% done. It currently can't read input, print processor traces, step, or a bunch of other functionality I need to work out. It just plays the game with no input right now.
 
-Still, 10-15 hours of work to port an entire NES emulator to a new language and build system I'm not used to is pretty good. Especially considering that I also set it in its own separate thread, which accounts for at least half the time spent integrating it. 
+Still, 10-15 hours of work to port an entire NES emulator to a new language and build system I'm not used to is pretty good. It speaks good to the usability of the language and toolchain. Especially considering that I also set it in its own separate thread, which accounts for at least half the time spent integrating it. 
 
 ### Why the separate thread?
-I move the NES to a separate thread because I read up on how the main browser thread works and how unpredictable it is. A browser can take 1-12ms just to do tasks needed for the UI. In fact, iOS refers to the main thread as the "UI thread," and that makes great sense. If you're doing something like a game, mostly just the UI should go in the main thread.
+I moved the new NES core to a separate thread because I read up on how the main browser thread works and how unpredictable it is. A browser can take 1-12ms just to do tasks needed for the UI. In fact, iOS refers to the main thread as the "UI thread," and that makes great sense. If you're doing something like a game, mostly just the UI should go in the main thread. Even on a fast system, you don't have a fixed budget on the main thread, because it has so many other responsibilities.
 
 The heavy lifting logic should be put in separate threads if at all possible. So I did that.
 
@@ -43,20 +43,21 @@ Specifically, its inside-AssemblyScript threading requires you to use WebAssembl
 
 You can write your own custom glue code, but I'm not comfy enough with it yet. Someone on the Discord mentioned using a different binding type too, which I haven't gotten around to yet.
 
-So threading isn't easy. Moving data into and out of it is pretty easy if you don't mind copying it. If you want to do something fast liek share a frame-buffer, it's actually not too hard, if a little unintuitive.
+So threading isn't easy. Moving data into and out of it is pretty easy if you don't mind copying it. If you want to do something fast like share a framebuffer, it's actually not too hard, if a little unintuitive.
 
 ### How to share memory between AssemblyScript and JavaScript
-When you start up AssemblyScript, it gives you an object that represents the linear memory. You can pass out a pointer and access this memory.
+When you initialize your AssemblyScript, it gives your JavaScript an object that represents the linear memory space that the AssemblyScript can access. You can pass out a pointer and access this memory directly.
 
-Here's, roughly, how I shared the framebuffer from inside to outside.
+Here's, roughly, how I shared the framebuffer from inside to outside, and then on the the main thread, with only one copy.
 
-First, to declare a buffer, instead of doing the normal thing and making a typed array, you need to use heap allocation.
+First, to declare a buffer, instead of doing the normal thing and making a typed array, you need to use heap allocation. This is so you are not worrying about the internal data structures of AssemblyScript.
 
 ```typescript
 // Don't forget to manually free this later!
 let ptr: usize = heap.alloc(size_to_allocate);
 
 // Now we want to write to it, we do it like so...
+// This is basically saying *(ptr+index) = value; in C. 
 store<u8>(ptr+index, value);
 ```
 
@@ -110,7 +111,7 @@ Furthermore, StaticArrays are performing bounds-checks. This is great for debug 
 
 Most compilers will let you disable bounds-checking with a flag, but in AssemblyScript, the code goes from this...
 
-```typescrypt
+```typescript
 let foo: Int32Array = new Int32Array(1024);
 
 let bar: i32 = foo[10];
@@ -133,9 +134,9 @@ Just doing that for basically all my TypedArrays cut execution time per-frame do
 Further optimizations are certainly possible, and I'm excited to see where it will take me.
 
 ### unchecked()
-unchecked() is not ideal, though. If I want to build it with bounds-checking on, I have to go through and remove all of that. NOT good for actually developing code. But the community is great. I just opened an Issue: https://github.com/AssemblyScript/assemblyscript/issues/2536
+unchecked() is not ideal, though. If I want to build the core with bounds-checking on, I have to go through and remove all of that. NOT good for actually developing code. But the community is great. I just opened an Issue: https://github.com/AssemblyScript/assemblyscript/issues/2536
 
-With the responses I've gotten so far from the community, I expect it'll be a thing pretty soon. Maybe I'll even make a PR for it! 
+With the responses I've gotten so far from the community, I expect it'll be a thing pretty soon. Maybe I'll even spend time to make a PR for it! 
 
 ### The path forward
 So, AssemblyScript is a bit of a step back for JSMoo, because it requires an extra step of compiling the code first. This defeats one of my goals of making it so you don't need a local development environment to tinker with JSMoo.
