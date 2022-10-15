@@ -1,6 +1,4 @@
-~~## WebAssembly via AssemblyScript
-
-—
+## WebAssembly via AssemblyScript
 
 ### WebAssembly? What about pure JavaScript?
 So, the emulators run great! On Chrome. Unfortunately, Firefox just isn't as miraculous at squeezing out performance. Emulators that run great in Chrome...do not, on Firefox.
