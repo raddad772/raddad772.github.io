@@ -563,6 +563,7 @@ I hope you see that JIT isn't actually so very hard! And I hope you understand t
 
 Some basic ones:
  
+* Generate more of the code. Like generate opcodes for R3000_fs_reg_write instead of calling out to it!
 * Write a scheduler that can run more than one block at once. Then optimize inter-block jumps so they don't need as many expensive thunks!
 * Take that last part one step further, and write it in assembly code, meant to be jumped to between blocks. Perhaps zero registers will need to be pushed and popped after you are done, except for the beginning and end of a long chain of block executions!
 * Instead of just keeping a pointer to CPU state (the core variable), put specific frequently-used registers directly into native registers, and extract them afterwards. This is very expensive but if you're running a bunch of blocks at a time, it is much less expensive than querying a data structure constantly!
