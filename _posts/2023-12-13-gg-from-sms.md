@@ -19,27 +19,27 @@ The GameGear has two modes, GameGear mode and SMS compatability mode, which is t
 
 The upgraded areas are:
 
-1) A start button
-2) It has 12-bit CRAM instead of the SMS's 8-bit, allowing for up to 4,096 shades for colors!
-3) The sound chip has an additonal register to control sound output to each speaker independently, though it does not affect the built-in speaker (only the headphones)
-4) There's a bunch of link cable-related ports added, which I mostly ignored
+1. A start button
+2. It has 12-bit CRAM instead of the SMS's 8-bit, allowing for up to 4,096 shades for colors!
+3. The sound chip has an additonal register to control sound output to each speaker independently, though it does not affect the built-in speaker (only the headphones)
+4. There's a bunch of link cable-related ports added, which I mostly ignored
 
 And some changes:
-1) BIOS is not in first model GameGears, so is not mandatory
-2) No Sega Card can be mapped, and AFAICT the GameGear cart cannot be unmapped. You should ignore the 
-3) GG carts use the same Sega mapper as SMS carts
+1. BIOS is not in first model GameGears, so is not mandatory
+2. No Sega Card can be mapped, and AFAICT the GameGear cart cannot be unmapped. You should ignore the 
+3. GG carts use the same Sega mapper as SMS carts
 
 And a change in presentation...
-1) The VDP now has 2 modes, SMS and GG.
-2) SMS mode is set by a physical switch due to the cartridge shape
-3) SMS mode works exactly the same, but the output is shrunk? Not sure
-4) GG mode works EXACTLY the same as SMS (with exception of CRAM, see CRAM below). You just need to crop your output to the middle of the image. All interrupts, timing etc. is exactly the same.
+1. The VDP now has 2 modes, SMS and GG.
+2. SMS mode is set by a physical switch due to the cartridge shape
+3. SMS mode works exactly the same, but the output is shrunk? Not sure
+4. GG mode works EXACTLY the same as SMS (with exception of CRAM, see CRAM below). You just need to crop your output to the middle of the image. All interrupts, timing etc. is exactly the same.
 
 ### Discriminating between them
 The GG's support for SMS backwards compatability, and the fact it is a physical switch on the cartridge, lead to an important considerations.
 
-1) You shouldn't need to worry about SMS compatability mode. 
-2) There is no flag in the game header saying it should be SMS or GG. Therefore I recommend you use a cartridge database like [S8BL](https://github.com/raddad772/s8bl) to determine extra info about a cart.
+1. You shouldn't need to worry about SMS compatability mode. 
+2. There is no flag in the game header saying it should be SMS or GG. Therefore I recommend you use a cartridge database like [S8BL](https://github.com/raddad772/s8bl) to determine extra info about a cart.
 
 ### VDP behavior
 

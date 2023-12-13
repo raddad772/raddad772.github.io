@@ -12,11 +12,11 @@ That's the MIPS R3000, the CPU inside the Sony PlayStation. All instructions are
 
 It's a completely good idea to start out planning a JIT from scratch. But to show how easy it is, we're going to start with a functional interpreter and go from there.
 
-1) Write an instruction decoder
-2) Write an interpreter
-3) Modify this interpreter to become a cached interpreter
-4) Modify the cached interpreter to use native code instead
-5) OOPS! I JIT'd!
+1. Write an instruction decoder
+2. Write an interpreter
+3. Modify this interpreter to become a cached interpreter
+4. Modify the cached interpreter to use native code instead
+5. OOPS! I JIT'd!
 
 For the sake of my sanity, I will assume you can already handle steps #1 and #2. This is not an intro to the basics of emulation.
 
@@ -278,9 +278,9 @@ R3000_fs_reg_write simply makes sure the register is properly updated in accorda
 
 In order to do what it needs to, this function needs to:
 
-1) Accept 4 arguments
-2) Access the registers out of the "core" structure (which is a 4th argument)
-3) Call a function to update the register properly according to internal pipeline rules
+1. Accept 4 arguments
+2. Access the registers out of the "core" structure (which is a 4th argument)
+3. Call a function to update the register properly according to internal pipeline rules
 
 We can create a complementary function whose purpose is to output amd64 assembly that accomplishes the same thing. 
 
