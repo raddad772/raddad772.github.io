@@ -45,4 +45,6 @@ To output a pixel, the VDP has to choose between (and using glitches, blend) the
 To do certain transparency effects, some games would use the debug register. The debug register is a special register that could force non-standard behavior. For instance, it could force a layer to be visible that otherwise may be hidden or disabled. When more than one layer was forced this way, their color values would be logical ANDed together, although this is relying on analog behavior that didn't work well in the earliest VDP revisions.
 
 ### A more technical dive into what happens each pixel...
-Is coming next time! See you there.
+For each pixel, layer A, B, and sprites are rendered.
+
+The aforementioned "window" layer is basically a low-functionality extension to Layer A. At certain times during drawing Layer A, if something is transparent, it can take the pixel from the background instead.  
