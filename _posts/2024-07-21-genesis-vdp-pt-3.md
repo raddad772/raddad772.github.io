@@ -18,10 +18,10 @@ Interestingly, it was reported in at least one magazine that the Genesis was des
 
 #### VSRAM
 
-VSRAM is Vertical Scroll RAM, 40 9-bit entries internal to the VDP that hold vertical scroll values independently for up to 40 columns across the screen.
+VSRAM is Vertical Scroll RAM, a 40-entry, 10-bit RAM internal to the VDP that hold vertical scroll values independently for up to 40 columns across the screen.
 
 #### CRAM
-Color RAM is a 64-entry, 10-bit RAM that holds palette information.
+Color RAM is a 64-entry, 9-bit RAM that holds palette information.
 
 #### Pixel Clock and Serial Clock (SC)
 The Pixel Clock is the clock by why the VDP outputs pixels. This happens with a /8 or /10 divisor off the main clock. It is exactly double the SC.
@@ -35,13 +35,13 @@ H32 refers to 32-cell, 256-pixel-wide mode, while H40 refers to 40-cell, 320-pix
 
 So, the VDP outputs a pixel every 8 or 10 main clock (mclk) ticks, depending on a few things.
 
-Internally, the VDP has a /5 clock divisor. It is also capable of changing to /4 or linking to EDCLK, an external clock at /4 divisor, to output pixels in 320-wide mode.
+Internally, the VDP has a /5 clock divisor. It is also capable of changing to /4 or linking to EDCLK, an external clock which provides a mixture of /4 and /5 at different times, see below.
 
 In H32 mode, the VDP keeps the /5 divisor.
 
 In H40 mode, the VDP keeps the /4 divisor during the visible portion of each scanline, to allow it to output pixels faster. During part of the invisible portion of each scanline, the VDP is at the /5 divisor. It does this all throughout the frame, even during vblank, when H40 is enabled.
 
-The reason for this, is that a 256-pixel scanline takes the same amount of time to output as a 320-pixel scanline. So it has to output them faster in 320-pixel mode. However the hblank (the time the beam takes to reposition to the start of the next line) has to remain the same length of time.
+The reason for this, is that a 256-pixel scanline takes the same amount of time to output as a 320-pixel scanline. So it has to output pixels faster in 320-pixel mode. However the hblank (the time the beam takes to reposition to the start of the next line) has to remain the same length of time.
 
 There's a bit more flexibility in timing, and PAL is of course different, but that covers most games on an NTSC console.
 
@@ -68,9 +68,7 @@ And the source forum post:
 ### Reading and writing VRAM, VSRAM, and CRAM
 If you'd like to read or write to VRAM, VSRAM, or CRAM, you need to go through the VDP. VRAM is hooked up to the VDP, not either of the CPUs, and VSRAM and CRAM are internal to the VDP itself.
 
-When you perform a read from VSRAM or CRAM, the VDP immediately returns the requested value. The same happens when you write one.
-
-However if you wish to access VRAM, things are different. As we discussed above, the VDP is using VRAM most of the time. The times it's not are when you can write commands.
+As discussed above, the VDP is using VRAM, VSRAM and CRAM most of the time in order to draw the screen. The times it's not are when you can read and write to the various memories from the CPU. On asking for a read, the VDP will use its prefetch mechanism to fill the prefetch latch with the requested data (see below for details). CRAM and VSRAM reads and writes are treated as a word, so only take 1 slot; VRAM reads and writes require 2 slots as they are done 1 byte each.
 
 ### Wait what's the FIFO and the prefetch?
 The command FIFO is a 4-entry FIFO that buffers commands to write to VRAM. Each time there's an empty slot, the VDP will write the oldest entry. If the FIFO is full and you try to write a 5th entry, the CPU will be stalled until there is an opportunity to discharge at least one FIFO entry.
@@ -80,21 +78,29 @@ The prefetch is a 1-slot buffer that reads from VRAM. When you set a VRAM addres
 However, the FIFO gets preference over the prefetches, so if you try to read VRAM while the FIFO is full, the processor will be stalled.
 
 ### DMA
-The DMA unit, when targeting VRAM, uses the FIFO buffer. It reads from whichever memory it's configured to, and puts entries into the FIFO. If the FIFO is full, the DMA unit will pause and wait.
-
-Due to certain design restrictions, the DMA unit can only write 1 byte at a time, despite the interface being 16 bits. Bytes are written in low-endian order.
-
-It appears that DMA was designed for 128K of RAM and, with that mod, the FIFO will commit 2 bytes per slot instead of 1 from DMA.
-
 DMA is actually a pretty simple mechanism. It has 3 "modes":
 
 1. 68k bus -> VRAM, VSRAM, or CRAM
 2. VRAM -> VRAM
 3. fill data -> VRAM
 
-You basically set the destination up as if you were about to do a CPU write, and then trigger the DMA unit. It will then repeatedly read from whichever source (including a byte you write to it for fill mode) and write it to the data port. This will fill the FIFO buffer with write commands. It then pauses until the FIFO buffer discharges at least once and continues on.
+The DMA unit, when doing type 1 transfers, uses the FIFO buffer. Depending on the mode, it reads from whichever memory it's configured to, and puts entries into the FIFO. If the FIFO is full, the DMA unit will pause and wait.
 
-I've had some trouble finding accurate information on exactly what commands cause DMA and which bits do what. Different reputable sources say to do different things. So, using the source of Ares, largely considered a fairly accurate VDP emulation, I've compiled the following information.
+Due to certain design restrictions, the DMA unit can only write 1 byte at a time, despite the interface being 16 bits. Bytes are written in low-endian order. It appears that DMA was designed for 128K of RAM and, with that mod, the FIFO will commit 2 bytes per slot instead of 1 from DMA.
+
+You basically set the destination up as if you were about to do a CPU write, and then trigger the DMA unit. It will then repeatedly read from whichever source, and write it to the data port. This will fill the FIFO buffer with write commands. It then pauses until the FIFO buffer discharges at least once and continues on.
+
+VRAM->VRAM works a bit differently, I'm not exactly sure how, perhaps it uses the prefetch latch. It appears to copy one word at a time.
+
+For fill, the DMA unit will keep writing the last word written to FIFO. When that word is fully written to VRAM, the fill will begin using that value. If you write a new word mid-way through the fill, said write will occur as normal and then be used as the value for the remainder of the fill.
+
+### Triggering DMA
+
+For modes 1 and 2, basically anything except fill, DMA starts when you set CD5 (a bit in a control register).
+
+The DMA enable bit in the VDP registers only configures if you can set CD5, as opposed to the general availability of DMA.
+
+For fill mode, you must set it up and then write the value to be used. This will trigger the fill to commence.
 
 ### TODO: specifics
 how to actually start DMAs, etc.
