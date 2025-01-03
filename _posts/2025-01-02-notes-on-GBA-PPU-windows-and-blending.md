@@ -81,10 +81,6 @@ if window0.enabled || window1.enabled || window_obj.enabled:
 ```
 
 Then, we check in order of priority if they apply to this pixel:
-if (this->ppu.window[GBA_WINOBJ].enable && this->ppu.window[GBA_WINOBJ].inside[x]) active_window = &this->ppu.window[GBA_WINOBJ];
-if (this->ppu.window[GBA_WIN1].enable && this->ppu.window[GBA_WIN1].inside[x]) active_window = &this->ppu.window[GBA_WIN1];
-if (this->ppu.window[GBA_WIN0].enable && this->ppu.window[GBA_WIN0].inside[x]) active_window = &this->ppu.window[GBA_WIN0];
-
 ```python
     actives = window_other.actives   # Default to this
     if (window_obj.enabled and window_obj.this_pixel_is_inside) actives = window_obj.actives
