@@ -5,31 +5,31 @@ I've been working on GBA lately. I struggled a LOT with this. I found gbatek and
 ### Rendering a GBA picture
 A GBA frame consists of the following elements: 
 
-1) Sprites (rendered to a line buffer the frame before, I presume). They can be individually marked as transparent, and they can be regular or affine (rotatde/scaled), but affine ones take a bit more than twice as long per-pixel to draw, so you get less per line.
-2) Backgrounds 0-3. They can be "regular" tile-mapped, 4bpp or 8bpp, or 8bpp affine. You lose 2 "regular" backgrounds for each "affine" background layer. Also there are bitmap modes but we're ignoring those.
-3) Windows. These are conceptual things that can do things like enable or disable color effects, and keep certain elements from being drawn.
+1. Sprites (rendered to a line buffer the frame before, I presume). They can be individually marked as transparent, and they can be regular or affine (rotatde/scaled), but affine ones take a bit more than twice as long per-pixel to draw, so you get less per line.
+2. Backgrounds 0-3. They can be "regular" tile-mapped, 4bpp or 8bpp, or 8bpp affine. You lose 2 "regular" backgrounds for each "affine" background layer. Also there are bitmap modes but we're ignoring those.
+3. Windows. These are conceptual things that can do things like enable or disable color effects, and keep certain elements from being drawn.
 
 There are also 3 color effects:
-1) Alpha blending, where two targets are blended together
-2) Brightening, where one target is brightened
-3) Darkening, where one target is darkened
+1. Alpha blending, where two targets are blended together
+2. Brightening, where one target is brightened
+3. Darkening, where one target is darkened
 
 Sprites and backgrounds can have priorities from 0-3, with 0 being the highest.
 
 ### Drawing a pixel
 To draw any given pixel, the GBA has to...
-1) Have rendered the sprites for that pixel previously,
-2) Render backgrounds 0-3 if enabled,
-3) Combine this all together with windows and sampling to decide what the output is.
+1. Have rendered the sprites for that pixel previously,
+2. Render backgrounds 0-3 if enabled,
+3. Combine this all together with windows and sampling to decide what the output is.
 
 That last step especially I got very confused about.
 
 ### More on windows
 There are 4 windows:
-1) WIN0, just a regular window, where the area "inside" is defined by top, left, right, and bottom
-2) WIN1, same as WIN0
-3) WINOBJ, where what is inside is defined as where any sprite pixels that aren't transparent, drawn in mode 2, are.
-4) WINOUTSIDE, which is basically "everything not contained in another window."
+1. WIN0, just a regular window, where the area "inside" is defined by top, left, right, and bottom
+2. WIN1, same as WIN0
+3. WINOBJ, where what is inside is defined as where any sprite pixels that aren't transparent, drawn in mode 2, are.
+4. WINOUTSIDE, which is basically "everything not contained in another window."
 
 WIN0, WIn1 and WINOBJ can be enabled or disabled separately. WINOUTSIDE is only enabled if any other window is enabled, else no window is enabled.
 
@@ -37,9 +37,9 @@ For each pixel we're rendering, each ENABLED window can have a status of "inside
 
 The window also has some bits associated with it:
 
-1) OBJ - controls if sprites are made visible by this window
-2) BG0-3 - controls if those backgrounds are made visible by this window
-3) color FX - controls if color effects are enabled by this window
+1. OBJ - controls if sprites are made visible by this window
+2. BG0-3 - controls if those backgrounds are made visible by this window
+3. color FX - controls if color effects are enabled by this window
 
 ### Priorities
 Each background can have its priority set individually, as can sprites, from 0-3.
@@ -52,12 +52,12 @@ If two elements have the SAME priority, then this order is used: sprite, obj0, o
 #### Elements
 Once we've rendered the sprites and backgrounds 0-3, we are left with 6 pixels to decide between, in order of priority (assuming they were all set to the same priority):
 
-1) Sprite pixel
-2) BG0 pixel
-3) BG1 pixel
-4) BG2 pixel
-5) BG3 pixel
-6) The background color, defined as palette RAM entry 0. (Note you cannot adjust this priority, and ANYTHING that renders is always ahead of this)
+1. Sprite pixel
+2. BG0 pixel
+3. BG1 pixel
+4. BG2 pixel
+5. BG3 pixel
+6. The background color, defined as palette RAM entry 0. (Note you cannot adjust this priority, and ANYTHING that renders is always ahead of this)
 
 We have that info. We have the states of the windows, and the color blending configuration. Now...how do we determine what value to output!?
 
@@ -93,10 +93,10 @@ Once we have done this, we now know which features are enabled for this pixel in
 #### Blending modes
 The blending mode can be set in the PPU registers to 4 values:
 
-0) Normal - no blending - output highest-priority pixel
-1) Alpha
-2) Brighten
-3) Darken
+0. Normal - no blending - output highest-priority pixel
+1. Alpha
+2. Brighten
+3. Darken
 
 Conceptually, there are then 2 "blend targets" possible. I will refer to these as blend target A and B, or Above and Below if you want to.
 
@@ -104,11 +104,11 @@ OBJ, BG0-3, and color0 can all be enabled or disabled individually for each blen
 
 Before we get into choosing a target, it's important to understand a few things, it simplifies things a LOT:
 
-1) Normal, brighten, and darken only require 1 target
-2) For Brighten and Darken, the candidate pixel will be the highest priority pixel. It must be a valid Blend Target A, if it is not, brighten/darken will not happen, pixel will output as if mode 0.
-3) For Alpha, the first pixel must be a valid Blend Target A, and the second must be a valid Blend Target B. Furthermore, they must be the highest 2 priority pixels (except in the case of transparent sprites, we'll get there, and this is a simple special case). If any of this is not true, blending will fail and it will output as if mode=0
-4) SFX must be enabled by the window, if there is a window, for any mode other than 0
-5) There is a caveat with Alpha. If we have a transparent sprite pixel as target A, it will work even if color SFX are disabled, assuming other conditions are true  
+1. Normal, brighten, and darken only require 1 target
+2. For Brighten and Darken, the candidate pixel will be the highest priority pixel. It must be a valid Blend Target A, if it is not, brighten/darken will not happen, pixel will output as if mode 0.
+3. For Alpha, the first pixel must be a valid Blend Target A, and the second must be a valid Blend Target B. Furthermore, they must be the highest 2 priority pixels (except in the case of transparent sprites, we'll get there, and this is a simple special case). If any of this is not true, blending will fail and it will output as if mode=0
+4. SFX must be enabled by the window, if there is a window, for any mode other than 0
+5. There is a caveat with Alpha. If we have a transparent sprite pixel as target A, it will work even if color SFX are disabled, assuming other conditions are true  
 
 So an algorithm to determine which pixel to output would look like this:
 
