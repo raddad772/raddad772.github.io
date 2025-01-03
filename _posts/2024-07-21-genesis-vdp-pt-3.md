@@ -73,6 +73,9 @@ As discussed above, the VDP is using VRAM, VSRAM and CRAM most of the time in or
 ### Wait what's the FIFO and the prefetch?
 The command FIFO is a 4-entry FIFO that buffers commands to write to VRAM. Each time there's an empty slot, the VDP will write the oldest entry. If the FIFO is full and you try to write a 5th entry, the CPU will be stalled until there is an opportunity to discharge at least one FIFO entry.
 
+However, due to certain design decisions, each FIFO entry requires two VRAM access slots of it is to VRAM, because it can only write one byte at a time - low, then high. CRAM and VSRAM writes are done as full words.
+
+
 The prefetch is a 1-slot buffer that reads from VRAM. When you set a VRAM address, it is (if possible) immediately prefetched, so that when a read command comes in, the data will be ready. 
 
 However, the FIFO gets preference over the prefetches, so if you try to read VRAM while the FIFO is full, the processor will be stalled.
@@ -85,8 +88,6 @@ DMA is actually a pretty simple mechanism. It has 3 "modes":
 3. fill data -> VRAM
 
 The DMA unit, when doing type 1 transfers, uses the FIFO buffer. Depending on the mode, it reads from whichever memory it's configured to, and puts entries into the FIFO. If the FIFO is full, the DMA unit will pause and wait.
-
-Due to certain design restrictions, the DMA unit can only write 1 byte at a time, despite the interface being 16 bits. Bytes are written in low-endian order. It appears that DMA was designed for 128K of RAM and, with that mod, the FIFO will commit 2 bytes per slot instead of 1 from DMA.
 
 You basically set the destination up as if you were about to do a CPU write, and then trigger the DMA unit. It will then repeatedly read from whichever source, and write it to the data port. This will fill the FIFO buffer with write commands. It then pauses until the FIFO buffer discharges at least once and continues on.
 
