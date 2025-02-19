@@ -23,10 +23,10 @@ Vertical mosaic just changes it to this:
 
 ```c
 bg0.render_line(bg0.mosaic_enabled ? bg_mosaic_v_counter : screen_y);
-bg1.render_line(screen_y ? bg_mosaic_v_counter : screen_y);
-bg2.render_line(screen_y ? bg_mosaic_v_counter : screen_y);
-bg3.render_line(screen_y ? bg_mosaic_v_counter : screen_y);
-sprite.render_line(screen_y ? obj_mosaic_v_counter : screen_y);
+bg1.render_line(bg1.mosaic_enabled ? bg_mosaic_v_counter : screen_y);
+bg2.render_line(bg2.mosaic_enabled ? bg_mosaic_v_counter : screen_y);
+bg3.render_line(bg3.mosaic_enabled ? bg_mosaic_v_counter : screen_y);
+sprite.render_line(obj.mosaic_enabled ? obj_mosaic_v_counter : screen_y);
 ```
 
 The line is rendered just as if it were the line held in the _mosaic_v_counter variable (with a caveat for affine backgrounds that we'll get to).
