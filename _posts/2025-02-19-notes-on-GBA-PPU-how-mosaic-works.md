@@ -1,4 +1,4 @@
-## Notes on GBA PPU: How mosaic
+## Notes on GBA PPU: How mosaic works
 
 ### Rendering a GBA picture
 One of the visual FX available to the GBA PPU is a "mosaic" mode. But how do you implement this?
@@ -141,3 +141,6 @@ if (!latched->mosaic_sprite || !src->mosaic_sprite || (mosaic_counter == 0))  {
 This allows a higher-priority mosaic sprite to properly cover up a lower-priority sprite.
 
 Congrats on your awesome-looking mosaic effect!
+
+### One last implementation detail
+On the actual hardware, mosaic counters are 4 bits, count up and are reset to 0 when they hit the mosaic #. In this case the pixel latches are still updated when the counter == 0.
