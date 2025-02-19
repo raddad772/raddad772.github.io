@@ -1,12 +1,14 @@
 ## Notes on GBA PPU: Windows and Blending
 
+EDIT 2/19/25: fix some small accuracy issues in terminology
+
 I've been working on GBA lately. I struggled a LOT with this. I found gbatek and even TONC's explanations to be confusing vs. the relative simplicity of what's actually going on.
 
 ### Rendering a GBA picture
 A GBA frame consists of the following elements: 
 
-1. Sprites (rendered to a line buffer the frame before, I presume). They can be individually marked as transparent, and they can be regular or affine (rotatde/scaled), but affine ones take a bit more than twice as long per-pixel to draw, so you get less per line.
-2. Backgrounds 0-3. They can be "regular" tile-mapped, 4bpp or 8bpp, or 8bpp affine. You lose 2 "regular" backgrounds for each "affine" background layer. Also there are bitmap modes but we're ignoring those.
+1. Sprites (rendered to a line buffer one line in advance by the hardware. I just do it at the start of rendering that line, since I go line-by-line). They can be individually marked as transparent, and they can be regular or affine (rotatde/scaled), but affine ones take a bit more than twice as long per-pixel to draw, so you get less per line.
+2. Backgrounds 0-3. They can be "regular" tile-mapped, 4bpp or 8bpp, or 8bpp affine. You lose 2 "regular" backgrounds for each "affine" background layer. Also there are bitmap modes, which basically just replace bg0-3 and follow most rules
 3. Windows. These are conceptual things that can do things like enable or disable color effects, and keep certain elements from being drawn.
 
 There are also 3 color effects:
@@ -46,7 +48,7 @@ Each background can have its priority set individually, as can sprites, from 0-3
 
 A priority 1 sprite will always display in front of a priority 2 anything else. A priority background will display in front of priority 1-3 anything else.
 
-If two elements have the SAME priority, then this order is used: sprite, obj0, obj1, obj2, obj3
+If two elements have the SAME priority, then this order is used: sprite, bg0, bg1, bg2, bg3
 
 ### To actually draw a pixel
 #### Elements
@@ -57,7 +59,7 @@ Once we've rendered the sprites and backgrounds 0-3, we are left with 6 pixels t
 3. BG1 pixel
 4. BG2 pixel
 5. BG3 pixel
-6. The background color, defined as palette RAM entry 0. (Note you cannot adjust this priority, and ANYTHING that renders is always ahead of this)
+6. The background color, defined as palette RAM entry 0. (Note you cannot adjust this priority, and ANYTHING that renders a pixel is always ahead of this)
 
 We have that info. We have the states of the windows, and the color blending configuration. Now...how do we determine what value to output!?
 
@@ -68,7 +70,7 @@ The "no window" will act like a window with all backgrounds and objects enabled,
 
 We want specific info from the active window for each pixel: if OBJ, BG0-3, and special FX are enabled.
 
-First, we set all of those to true.
+First, we set all of those enables to true
 
 ```python
 actives = [obj: True, BG0: True, BG1: True, BG2: True, BG3: True, SFX: True]
@@ -113,11 +115,11 @@ Before we get into choosing a target, it's important to understand a few things,
 So an algorithm to determine which pixel to output would look like this:
 
 ```
-determine the two highest-priority pixels that are enabled by the current window or lack of window into target_A and target_B
+#determine the two highest-priority pixels that are enabled by the current window or lack of window into target_A and target_B
 
 output_color = target_A.output_color
 
-if (special effects is enabled by the window or not having a window), OR
+if (special effects is enabled by the window or not having a window), OR\
    (the highest-priority pixel (target_A) is a translucent sprite pixel, and the second-highest-priority is a valid Layer B target):
     if (target_A is a translucent sprite pixel, and the target_B is a valid layer B target):
         output_color = blend(target_A, target_B)
