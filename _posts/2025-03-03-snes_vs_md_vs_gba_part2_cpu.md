@@ -141,8 +141,8 @@ Here are a few notes on some common tasks...
 ### Overall
 Overall, the ranking is...
 
-1. ARM7TDMI (GBA)
-2. M68000 (Genesis)
-3. 65816 (SNES)
+1. ARM7TDMI (GBA) - 2 points
+2. M68000 (Genesis) - 1 point
+3. 65816 (SNES) - 0 points
 
 I'd say that, in terms of raw power, the GBA CPU is in practice only 2-4x more powerful than the Genesis, and with bad enough programming, could actually run slower. The Genesis is only about 1.5-2x as powerful as the SNES. This is a VERY GENERAL OVERVIEW, however, and with careful programming, the SNES can approach the Genesis in processing. It also doesn't take into account the GBA's lack of sound hardware.
