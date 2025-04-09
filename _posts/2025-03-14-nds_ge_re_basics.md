@@ -1,3 +1,22 @@
+basically, the old way of doing it cycle by cycle (for me) was
+
+```
+biggest_step = MIN(MIN(MIN(component1_cycles_til_next_tick, c2ctnt), c3ctnt);
+component1_cycles -= biggest_step;
+component2_cycles -= biggest_step;
+component3_cycles -= biggest_step;
+if (component1_cycles <= 0)
+   tick_component_1();
+   component1_cycles += component1_divisor
+if (component2_cycles <= 0)
+
+...etc.
+```
+
+I was trying to think. Could I schedule these individually? No, that'd end up being >22k events per frame, which would take time both to schedule and to traverse
+
+OK, could I make a repeating scheduling
+
 ## Nintendo DS Geometry & Rendering Engine notes, the basics, and the vertex cache and edge finding for RE
 
 As usual, while developing an emulator, I've found the existing documentation amazing - made by heroes ! - but lacking in some details or explanations. And as usual, I''ve had access to some really great people on the r/emudev Discord who've helped me out a lot. I'm writing some of these blog posts in order to share what I've learned.
