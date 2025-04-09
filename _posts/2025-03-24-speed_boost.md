@@ -78,6 +78,7 @@ We've got 3 components we're mediating between: the m68000, the z80, and the VDP
 * always move the clock forward by VDP cycles (4 or 5)
 * our m68k and z80 "cycles til next tick" will always be in the range of 1-15 for the z80, or 1-7 for the m68k
 * Since we're always moving forward by either 4 or 5, that means that there's only(15*7)=105 possible states for these to be in.
+* I could create a 105*2 entry lookup table, where the index was the current state, which tells us what to do!
 
 At any point in our 105*2 entry table, any of the following 5 things can happen:
 
@@ -104,7 +105,7 @@ VDP_tick();
 VDP_tick();
 ```
 
-I could easily represent this as a function pointer to one of 5 functions.
+The only thing that really matters to the core is that they happen in the correct order. And I could easily represent this as a function pointer to one of 5 functions.
 
 I also realized that the "output" cycles_til_next_z80/m68k depended totally on the input. So if I included a part in the table that points to the next index, and made sure I got the ordering correct, I wouldn't even need to keep track of "cycles til next tick" for any component at all.
 
