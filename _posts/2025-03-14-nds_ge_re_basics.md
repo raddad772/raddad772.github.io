@@ -1,4 +1,4 @@
-## Nintendo DS Geometry and Rendering Engine notes
+## Nintendo DS Geometry an Rendering Engine notes
 
 As usual, while developing an emulator, I've found the existing documentation amazing - made by heroes ! - but lacking in some details or explanations. And as usual, I''ve had access to some really great people on the r/emudev Discord who've helped me out a lot. I'm writing some of these blog posts in order to share what I've learned.
 
