@@ -1,4 +1,4 @@
-## Retro Speed Boost!
+## Retro Speed Boost
 
 When emulating an old system cycle-accurately, there's a few ways of doing it.
 
