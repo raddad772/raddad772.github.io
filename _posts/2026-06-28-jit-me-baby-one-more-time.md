@@ -47,12 +47,12 @@ while (cycles_left > 0) {
 
 On a naive interpreter, every single time you execute that instruction, you're paying multiple costs that we can eliminate.
 
-1) fetch the instruction - eliminated by CI
-2) decode the instruction family - eliminated by CI
-3) setup the stack and call the function for the handler - eliminated by CI, eventually
-4) decode the instruction operands - eliminated by CI
-5) actually execute the instruction's logic
-6) account for PC changes and cycle counts - eliminated by CI, eventually
+1. fetch the instruction - eliminated by CI
+2. decode the instruction family - eliminated by CI
+3. setup the stack and call the function for the handler - eliminated by CI, eventually
+4. decode the instruction operands - eliminated by CI
+5. actually execute the instruction's logic
+6. account for PC changes and cycle counts - eliminated by CI, eventually
 
 ### ~230 MIPS. Step 3: the cached (block) interpreter
 
