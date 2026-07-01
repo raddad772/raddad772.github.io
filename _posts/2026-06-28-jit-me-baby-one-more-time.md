@@ -78,9 +78,7 @@ void SH4::SH4_MOV(cell *c) {
 
 We translated these in groups called blocks from some PC, stopping at the first control-flow instruction (plus its delay slot), and stashed the block in a map keyed by the physical RAM address it came from. Next time the PC landed there, we skipped fetching+decoding entirely.
 
-That already knocked out costs (1), (2), and (4) from the list above. But there was another easy win sitting right there. On a 64-bit host the cell was a bloated ~40 bytes, and every dispatch called through a pointer-to-member. Both were quietly costing us, and both were fixable.
-
-Now, fetching a block to execute looked like this:
+That already knocked out costs (1), (2), and (4) from the list above. Now, fetching a block to execute looked like this:
 
 ```c++
 block *get_block(SH4 *cpu, u32 pc) {
