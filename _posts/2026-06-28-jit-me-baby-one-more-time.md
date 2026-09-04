@@ -4,6 +4,10 @@ Performance. The dream of man. The age-old question: can I has the MIPS?
 
 A while back I wrote up the theory of going from an interpreter to a JIT on the R3000. This time we're doing it for real, in C++, on the SH4, for the Sega Dreamcast. We'll head interpreter->cached interpreter->JIT->much better JIT, step by step.
 
+### A quick note
+Some of the techniques (steps 7, 8, and 10) were adapted from techniques used in the implementation of hyenasky's xr/emu and discussions with them.
+https://github.com/xrarch/xremu
+
 ### The SH4
 It's a 200MHz RISC chip with 16 32-bit general registers, fixed 16-bit instructions, branch delay slots, an FPU with a couple of fun mode bits, and an MMU we avoid emulating if possible (but we'll get to how I do it, maybe in a later article.) By the end we'll have a dynarec that beats a very, very fast cached interpreter.
 
