@@ -170,4 +170,4 @@ The Soul Calibur fight benches ~1400 MIPS (1270–1450 run to run; an interleave
 
 One caveat on all these percentages: this machine is an Apple M4, which eats indirect branches and dependent loads for breakfast. 
 
-The whole MMU saga is its own post, but honestly, I've more than hit my Dreamcast perf goals. I did a whole series of optimizations when porting to x86-64, and on a decade-old mid-range Ryzen I can get like 400 MIPS in Half-Life now and like 800+ in Soul calibur. I'm working on Intel emulation lately, and that JIT has been a whole harder beast with interesting MMU fun. I'll probably write part 3 about the differences in JIT design I've come to, as well discuss in-depth MMU emulation there.
+The whole MMU saga is its own post, as is the port to Intel CPUs and the optimizations there. Not sure how far I'll take this since lately I've been working on 32-bit PC emulation; we'll see.
