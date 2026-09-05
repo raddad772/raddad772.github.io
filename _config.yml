@@ -20,6 +20,9 @@ github_username: "raddad772"
 #########################################################################################
 theme: "minima"
 
+exclude:
+  - posts_in_progress
+
 rss: rss
 
 kramdown:
