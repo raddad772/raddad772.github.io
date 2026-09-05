@@ -1,6 +1,6 @@
 ## I'm a JIT 4 W(indows)
 
-Part 2 ended with a caveat: all those percentages came off an Apple M4, a machine that eats indirect branches and dependent loads for breakfast. So for Part 3 I got serious about the slower x86 box: a Ryzen 5 4600H laptop (Zen 2, six cores, 45 watts on a good day) with a GTX 1650. Running Windows. Which is where the actual users are, and which is where an emulator's performance actually matters, since Apple processors are so OP.
+Part 2 ended with a caveat: all those percentages came off an Apple M4, a machine that eats indirect branches and dependent loads for breakfast. So for Part 3 I got serious about a slower x86 PC: a Ryzen 5 4600H laptop (Zen 2, six cores, 45 watts on a good day) with a GTX 1650. Running Windows.
 
 This post covers the three weeks it took to make the JIT fast on that machine. Getting a working port only took about a day. The next part mostly covers the "fast" part. 
 
