@@ -183,5 +183,14 @@ After this, A/B's got a lot more stable, with closer to 2-3% thermal variance pe
 
 Call it roughly 4x realtime for the 200MHz guest, on a six-core laptop from 2020, at the wall wattage of a bright lightbulb. The M4 still reads ~2x higher on the same fight, but this seems good enough. 
 
-I did further development on a 15W version of the same chip with an iGPU, and I got Half-Life up to like 560 MIPS in the tram benchmark with further optimizations, but honestly I'm getting tired of this blog post series. I've been working on Intel CPU JITs and want to start writing about those, because SH4 feels like easy-mode in comparison. 
+I did further development on a 15W version of the same chip with an iGPU, and I got Half-Life up to like 560 MIPS in the tram benchmark with further optimizations, but really I'm getting kinda tired of this blog post series. I've been working on Intel CPU JITs and want to start writing about those, because SH4 feels like easy-mode in comparison.
 
+### Two last interesting notes for Dreamcast/JIT emu-devs
+
+There are two final remarks from later optimizations to make here.
+
+1) I saw that the SH4 supported 1kb minimum page size, and that some were instantiated, so assumed it'd always be that way. This meant a lot slower paging even in Windows which supports 4kb pages.
+
+Well, I eventually measured, and no WindowsCE games, anywhere that I got in gameplay, have any 1kb pages allocated outside of initial booting process. So I slow-pathed 1kb accesses, and treated it AS IF there was 4kb minimum page size, and got a fairly significant speed-up in games.
+
+2) On the M4, 64-bit pointers to everything are everywhere. I tried shrinking them to 32-bits (which means it's now base + offset instead of a direct pointer) and it shrunk code size but was a wash overall. On Ryzen, shrinking pointers to 32 bits was often a big win, and I got 5-8% speed increases in games doing this in a few different places.
